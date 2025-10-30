@@ -222,7 +222,8 @@ try {
     Push-Location (Join-Path $CloneDirectory "scripts")
     try {
         Write-Host "Logging install output to: $installLog" -ForegroundColor $ColorInfo
-        & powershell -NoProfile -ExecutionPolicy Bypass -Command "& .\\install.ps1" 2>&1 | Tee-Object -FilePath $installLog
+        # Use Start-Transcript to capture all streams including Write-Host
+        & powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Transcript -Path '$installLog' -Force; & .\\install.ps1; Stop-Transcript" | Out-Null
     }
     finally {
         Pop-Location
