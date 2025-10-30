@@ -217,10 +217,12 @@ try {
     Write-Host "===========================================================" -ForegroundColor $ColorInfo
     Write-Host ""
     
-    # Change to scripts directory and run install.ps1
+    # Change to scripts directory and run install.ps1 with logging
+    $installLog = Join-Path $TempDir "install-output.log"
     Push-Location (Join-Path $CloneDirectory "scripts")
     try {
-        & .\install.ps1
+        Write-Host "Logging install output to: $installLog" -ForegroundColor $ColorInfo
+        & powershell -NoProfile -ExecutionPolicy Bypass -Command "& .\\install.ps1" 2>&1 | Tee-Object -FilePath $installLog
     }
     finally {
         Pop-Location
@@ -233,6 +235,9 @@ try {
     Write-Host ""
     Write-Host "Repository location: $CloneDirectory" -ForegroundColor $ColorInfo
     Write-Host ""
+    if ($Host.Name -eq 'ConsoleHost') {
+        Read-Host "Press Enter to close"
+    }
 }
 catch {
     Write-Host ""
@@ -244,8 +249,12 @@ catch {
     Write-Host ""
     Write-Host "Please check the error message above and try again." -ForegroundColor $ColorWarning
     Write-Host "If the problem persists, contact your administrator." -ForegroundColor $ColorWarning
+    Write-Host "Logs (if any): $TempDir" -ForegroundColor $ColorWarning
     Write-Host ""
-    exit 1
+    if ($Host.Name -eq 'ConsoleHost') {
+        Read-Host "Press Enter to close"
+    }
+    throw $_
 }
 finally {
     # Cleanup temp directory
